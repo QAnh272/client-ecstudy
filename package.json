@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0 -p 3001",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3001",
     "lint": "eslint"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.6.1",
+    "axios": "^1.13.2",
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0"
