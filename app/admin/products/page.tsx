@@ -25,6 +25,8 @@ export default function ProductsManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
@@ -199,6 +201,17 @@ export default function ProductsManagement() {
     ), [products, searchQuery]
   );
 
+  // Tính toán phân trang
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Reset về trang 1 khi search thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   return (
     <AdminLayout activePage="products">
       <div className="space-y-6">
@@ -249,14 +262,18 @@ export default function ProductsManagement() {
                 </thead>
 
                 <tbody>
-                  {filteredProducts.map((product) => (
+                  {paginatedProducts.map((product) => (
                     <tr key={product.id} className="border-t hover:bg-blue-50 transition-colors duration-150">
                       <td className="py-3 px-4">
                         {product.image_url ? (
                           <img
-                            src={product.image_url}
+                            src={`http://localhost:3000${product.image_url}`}
                             alt={product.name}
                             className="w-12 h-12 object-cover rounded border"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
                           />
                         ) : (
                           <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
@@ -318,6 +335,43 @@ export default function ProductsManagement() {
               </table>
             </div>
           )}
+
+            {/* Phân trang */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex justify-center items-center gap-3">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Trước
+                </button>
+                
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`min-w-[40px] px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white font-semibold shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Sau
+                </button>
+              </div>
+            )}
         </div>
       </div>
 

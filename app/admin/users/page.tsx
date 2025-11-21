@@ -32,6 +32,8 @@ export default function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userOrders, setUserOrders] = useState<Order[]>([]);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
@@ -101,6 +103,17 @@ export default function UsersManagement() {
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Tính toán phân trang
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset về trang 1 khi search thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {
       pending: 'bg-yellow-100 text-yellow-800',
@@ -160,7 +173,7 @@ export default function UsersManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <tr key={user.id} className="border-t hover:bg-gray-50">
                       <td className="py-3 px-4 text-gray-900 font-medium">
                         <div className="flex items-center gap-2">
@@ -216,6 +229,42 @@ export default function UsersManagement() {
               </table>
             </div>
           )}
+            {/* Phân trang */}
+            {totalPages > 1 && (
+              <div className="mt-6 mb-4 flex justify-center items-center gap-3">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Trước
+                </button>
+                
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`min-w-10 px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white font-semibold shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Sau
+                </button>
+              </div>
+            )}
         </div>
       </div>
 

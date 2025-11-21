@@ -23,7 +23,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children, activePage }: AdminLayoutProps) {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(() => authService.getStoredUser());
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -36,8 +36,10 @@ export default function AdminLayout({ children, activePage }: AdminLayoutProps) 
       router.push('/');
       return;
     }
-    setUser(currentUser);
-  }, [router]);
+    if (!user) {
+      setUser(currentUser);
+    }
+  }, [router, user]);
 
   const handleLogout = () => {
     authService.logout();
@@ -52,11 +54,7 @@ export default function AdminLayout({ children, activePage }: AdminLayoutProps) 
   ];
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Đang tải...</div>
-      </div>
-    );
+    return null;
   }
 
   return (

@@ -34,6 +34,8 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadOrders();
@@ -118,6 +120,17 @@ export default function AdminOrdersPage() {
       order.phone_number?.toLowerCase().includes(search)
     );
   });
+
+  // Tính toán phân trang
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+
+  // Reset về trang 1 khi filter thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, searchQuery]);
 
   const stats = {
     total: orders.length,
@@ -218,7 +231,7 @@ export default function AdminOrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {filteredOrders.map((order) => (
+                  {paginatedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <span className="font-mono text-sm text-black">
@@ -289,6 +302,42 @@ export default function AdminOrdersPage() {
               </table>
             </div>
           )}
+            {/* Phân trang */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex justify-center items-center gap-3">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Trước
+                </button>
+                
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`min-w-10 px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white font-semibold shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                >
+                  Sau
+                </button>
+              </div>
+            )}
         </div>
       </div>
     </AdminLayout>
