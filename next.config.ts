@@ -21,6 +21,18 @@ const nextConfig: NextConfig = {
         port: '3000',
         pathname: '/products/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'encrypted-tbn0.gstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'play-lh.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'jobs.neu.edu.vn',
+      },
     ],
     unoptimized: true, // Tắt tối ưu hóa để hỗ trợ tất cả định dạng ảnh
   },

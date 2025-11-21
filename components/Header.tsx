@@ -159,7 +159,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-blue-700 text-white">
+    <header className="bg-blue-700 text-white sticky top-0 z-50 shadow-md">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-2 md:gap-4">
           {/* Logo */}

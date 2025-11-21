@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import ProductQuickView from '@/components/ProductQuickView';
 import { api } from '@/lib/api';
@@ -123,6 +124,8 @@ export default function HomePage() {
           onClose={() => setQuickViewProduct(null)}
         />
       )}
+
+      <Footer />
     </div>
   );
 }
