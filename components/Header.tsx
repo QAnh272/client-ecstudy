@@ -104,7 +104,9 @@ export default function Header() {
         const response = await api.get<{ success: boolean; data: Product[] }>(
           `/api/products/search?q=${encodeURIComponent(searchQuery)}&limit=5`
         );
+        console.log('Search response:', response);
         if (response.success && response.data.length > 0) {
+          console.log('Products found:', response.data);
           setSearchSuggestions(response.data);
           setShowSuggestions(true);
         } else {
@@ -131,6 +133,8 @@ export default function Header() {
   };
 
   const handleSuggestionClick = (productId: string) => {
+    console.log('Clicked product ID:', productId);
+    console.log('Navigating to:', `/products/${productId}`);
     setShowSuggestions(false);
     setSearchQuery('');
     router.push(`/products/${productId}`);
@@ -186,10 +190,11 @@ export default function Header() {
               {showSuggestions && searchSuggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
                   {searchSuggestions.map((product) => (
-                    <div
+                    <button
                       key={product.id}
-                      onClick={() => handleSuggestionClick(product.id)}
-                      className="flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0"
+                      type="button"
+                      onMouseDown={() => handleSuggestionClick(product.id)}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0 text-left"
                     >
                       <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
                         {product.image_url && (
@@ -207,7 +212,7 @@ export default function Header() {
                         <p className="text-sm text-blue-600 font-semibold">{formatPrice(product.price)}</p>
                       </div>
                       <SearchOutlined className="text-gray-400" />
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -352,10 +357,11 @@ export default function Header() {
             {showSuggestions && searchSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-72 overflow-y-auto">
                 {searchSuggestions.map((product) => (
-                  <div
+                  <button
                     key={product.id}
-                    onClick={() => handleSuggestionClick(product.id)}
-                    className="flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0"
+                    type="button"
+                    onMouseDown={() => handleSuggestionClick(product.id)}
+                    className="w-full flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0 text-left"
                   >
                     <div className="w-10 h-10 bg-gray-100 rounded shrink-0 overflow-hidden">
                       {product.image_url && (
@@ -372,7 +378,7 @@ export default function Header() {
                       <p className="text-xs font-medium text-gray-800 truncate">{product.name}</p>
                       <p className="text-xs text-blue-600 font-semibold">{formatPrice(product.price)}</p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}

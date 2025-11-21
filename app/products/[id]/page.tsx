@@ -68,6 +68,20 @@ export default function ProductDetailPage() {
       maximumFractionDigits: 0,
     }).format(price) + 'đ';
   };
+  
+  // Xử lý URL ảnh
+  const getImageUrl = (url: string | undefined) => {
+    if (!url) return '/placeholder.png';
+    
+    // Nếu là URL đầy đủ (http/https)
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // Nếu là đường dẫn tương đối, thêm base URL của API
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    return `${apiUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = quantity + delta;
@@ -173,12 +187,12 @@ export default function ProductDetailPage() {
                 </div>
               ) : (
                 <Image
-                  src={product.image_url || '/placeholder.png'}
+                  src={getImageUrl(product.image_url)}
                   alt={product.name}
                   fill
                   className="object-cover"
                   onError={() => setImageError(true)}
-                  unoptimized={product.image_url?.includes('localhost')}
+                  unoptimized
                 />
               )}
             </div>

@@ -69,6 +69,20 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
       maximumFractionDigits: 0,
     }).format(price) + 'đ';
   }, []);
+  
+  // Xử lý URL ảnh
+  const getImageUrl = useCallback((url: string) => {
+    if (!url) return '/placeholder.png';
+    
+    // Nếu là URL đầy đủ (http/https)
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // Nếu là đường dẫn tương đối, thêm base URL của API
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    return `${apiUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  }, []);
 
   const handleQuantityChange = useCallback((delta: number) => {
     setQuantity((prev) => {
@@ -136,13 +150,13 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
                   </div>
                 ) : (
                   <Image
-                    src={images[selectedImage] || '/placeholder.png'}
+                    src={getImageUrl(images[selectedImage])}
                     alt={product.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
                     onError={() => setImageError(true)}
-                    unoptimized={images[selectedImage]?.includes('localhost')}
+                    unoptimized
                     priority
                   />
                 )}
@@ -158,12 +172,12 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
                       }`}
                   >
                     <Image
-                      src={img || '/placeholder.png'}
+                      src={getImageUrl(img)}
                       alt={`${product.name} ${idx + 1}`}
                       fill
                       sizes="100px"
                       className="object-cover"
-                      unoptimized={img?.includes('localhost')}
+                      unoptimized
                       loading="lazy"
                     />
                   </div>

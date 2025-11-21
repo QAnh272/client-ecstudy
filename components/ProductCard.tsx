@@ -35,6 +35,20 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       maximumFractionDigits: 0,
     }).format(price) + 'đ';
   };
+  
+  // Xử lý URL ảnh
+  const getImageUrl = () => {
+    if (!product.image_url) return '/placeholder.png';
+    
+    // Nếu là URL đầy đủ (http/https)
+    if (product.image_url.startsWith('http://') || product.image_url.startsWith('https://')) {
+      return product.image_url;
+    }
+    
+    // Nếu là đường dẫn tương đối, thêm base URL của API
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    return `${apiUrl}${product.image_url.startsWith('/') ? '' : '/'}${product.image_url}`;
+  };
 
   // Kiểm tra sản phẩm mới (tạo trong vòng 7 ngày)
   const isNew = () => {
@@ -57,12 +71,12 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
             </div>
           ) : (
             <Image
-              src={product.image_url || '/placeholder.png'}
+              src={getImageUrl()}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-300"
               onError={() => setImageError(true)}
-              unoptimized={product.image_url?.includes('localhost')}
+              unoptimized
             />
           )}
           
