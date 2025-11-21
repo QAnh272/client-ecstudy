@@ -9,22 +9,19 @@ interface RegisterData {
 
 export const authService = {
   // Register
-  async register(data: RegisterData): Promise<AuthResponse> {
+  async register(data: RegisterData, rememberMe: boolean = false): Promise<AuthResponse> {
     const response = await api.post<ApiResponse<AuthResponse>>(endpoints.auth.register, data);
     
     if (!response.data) throw new Error(response.message || 'Đăng ký thất bại');
     
-    // Store token in localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
+    // Store token based on rememberMe option
+    this.storeAuth(response.data.token, response.data.user, rememberMe);
     
     return response.data;
   },
 
   // Login
-  async login(email: string, password: string): Promise<AuthResponse> {
+  async login(email: string, password: string, rememberMe: boolean = false): Promise<AuthResponse> {
     const response = await api.post<ApiResponse<AuthResponse>>(endpoints.auth.login, {
       email,
       password,
@@ -32,13 +29,25 @@ export const authService = {
     
     if (!response.data) throw new Error(response.message || 'Đăng nhập thất bại');
     
-    // Store token in localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
+    // Store token based on rememberMe option
+    this.storeAuth(response.data.token, response.data.user, rememberMe);
     
     return response.data;
+  },
+
+  // Store authentication data
+  storeAuth(token: string, user: User, rememberMe: boolean): void {
+    if (typeof window === 'undefined') return;
+    
+    const storage = rememberMe ? localStorage : sessionStorage;
+    const expiryTime = rememberMe ? Date.now() + (60 * 60 * 1000) : null; // 1 hour if remember
+    
+    storage.setItem('token', token);
+    storage.setItem('user', JSON.stringify(user));
+    
+    if (rememberMe && expiryTime) {
+      storage.setItem('tokenExpiry', expiryTime.toString());
+    }
   },
 
   // Logout
@@ -46,18 +55,53 @@ export const authService = {
     try {
       await api.post(endpoints.auth.logout);
     } finally {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
+      this.clearAuth();
     }
   },
 
-  // Get user from localStorage
+  // Clear all auth data
+  clearAuth(): void {
+    if (typeof window === 'undefined') return;
+    
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('tokenExpiry');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+  },
+
+  // Get stored token
+  getToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    
+    // Check localStorage first (remember me)
+    let token = localStorage.getItem('token');
+    if (token) {
+      // Check if token expired
+      const expiry = localStorage.getItem('tokenExpiry');
+      if (expiry && Date.now() > parseInt(expiry)) {
+        this.clearAuth();
+        return null;
+      }
+      return token;
+    }
+    
+    // Check sessionStorage (current session)
+    token = sessionStorage.getItem('token');
+    return token;
+  },
+
+  // Get user from storage
   getStoredUser(): User | null {
     if (typeof window === 'undefined') return null;
     
-    const userStr = localStorage.getItem('user');
+    // Check localStorage first
+    let userStr = localStorage.getItem('user');
+    if (!userStr) {
+      // Check sessionStorage
+      userStr = sessionStorage.getItem('user');
+    }
+    
     if (!userStr) return null;
     
     try {
@@ -69,8 +113,7 @@ export const authService = {
 
   // Check if authenticated
   isAuthenticated(): boolean {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('token');
+    return !!this.getToken();
   },
 
   // Check if admin

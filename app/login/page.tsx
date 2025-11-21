@@ -14,6 +14,7 @@ export default function LoginPage() {
     email: '',
     password: '',
   });
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -31,7 +32,7 @@ export default function LoginPage() {
       setLoading(true);
       setError(null);
       
-      const result = await authService.login(formData.email, formData.password);
+      const result = await authService.login(formData.email, formData.password, rememberMe);
       
       // Redirect based on role
       if (result.user.role === 'admin') {
@@ -116,8 +117,13 @@ export default function LoginPage() {
 
           {/* Forgot Password */}
           <div className="flex items-center justify-between">
-            <label className="flex items-center">
-              <input type="checkbox" className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+            <label className="flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" 
+              />
               <span className="ml-2 text-sm text-black">Ghi nhớ đăng nhập</span>
             </label>
             <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
