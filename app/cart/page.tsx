@@ -306,10 +306,11 @@ export default function CartPage() {
                           {/* Image */}
                           <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                             <Image
-                              src={`http://localhost:3000${item.image_url}` || '/placeholder.png'}
-                              alt={item.name}
+                              src={item.image_url && item.image_url.trim() ? (item.image_url.startsWith('http') ? item.image_url : `http://localhost:3000${item.image_url}`) : '/placeholder.png'}
+                              alt={item.name || 'Product'}
                               fill
                               className="object-cover"
+                              unoptimized
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = '/placeholder.png';

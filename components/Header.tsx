@@ -187,7 +187,7 @@ export default function Header() {
               </button>
 
               {/* Search Suggestions Dropdown */}
-              {showSuggestions && searchSuggestions.length > 0 && (
+              {mounted && showSuggestions && searchSuggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
                   {searchSuggestions.map((product) => (
                     <button
@@ -199,7 +199,7 @@ export default function Header() {
                       <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
                         {product.image_url && (
                           <Image
-                            src={`http://localhost:3000${product.image_url}`}
+                            src={product.image_url.trim() ? (product.image_url.startsWith('http') ? product.image_url : `http://localhost:3000${product.image_url}`) : '/placeholder.png'}
                             alt={product.name}
                             width={48}
                             height={48}
@@ -358,7 +358,7 @@ export default function Header() {
             </button>
 
             {/* Mobile Search Suggestions Dropdown */}
-            {showSuggestions && searchSuggestions.length > 0 && (
+            {mounted && showSuggestions && searchSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-72 overflow-y-auto">
                 {searchSuggestions.map((product) => (
                   <button
@@ -370,7 +370,7 @@ export default function Header() {
                     <div className="w-10 h-10 bg-gray-100 rounded shrink-0 overflow-hidden">
                       {product.image_url && (
                         <Image
-                          src={`http://localhost:3000${product.image_url}`}
+                          src={product.image_url.trim() ? (product.image_url.startsWith('http') ? product.image_url : `http://localhost:3000${product.image_url}`) : '/placeholder.png'}
                           alt={product.name}
                           width={40}
                           height={40}
