@@ -150,7 +150,7 @@ export default function AdminOrdersPage() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <ShoppingOutlined style={{ fontSize: '32px' }} className="text-blue-600" color='#000'/>
+            <ShoppingOutlined style={{ fontSize: '32px',color:"#000000" }} className="text-blue-600"/>
             <h1 className="text-3xl font-bold text-black">Quản lý đơn hàng</h1>
           </div>
         </div>
