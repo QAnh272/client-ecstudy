@@ -310,8 +310,10 @@ export default function Header() {
                     </div>
                     <div className="hidden md:block text-left">
                       <div className="text-base font-semibold leading-tight">Đăng nhập</div>
-                      <Link href="/register" className="text-xs leading-tight hover:underline">Đăng ký</Link>
                     </div>
+                  </Link>
+                  <Link href="/register" className="hidden md:block text-xs text-blue-200 hover:text-white hover:underline transition-colors">
+                    Đăng ký
                   </Link>
                 </div>
               )
