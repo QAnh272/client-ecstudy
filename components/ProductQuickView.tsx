@@ -8,6 +8,7 @@ import { CloseOutlined, MinusOutlined, PlusOutlined, ShoppingCartOutlined } from
 import { api } from '@/lib/api';
 import { authService } from '@/services/authService';
 import Modal from './Modal';
+import AlertModal from './AlertModal';
 
 interface Product {
   id: string;
@@ -32,6 +33,17 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [imageError, setImageError] = useState(false);
+  
+  // Modal state
+  const [alertModal, setAlertModal] = useState<{ 
+    isOpen: boolean; 
+    message: string; 
+    type: 'success' | 'error' | 'warning' 
+  }>({ 
+    isOpen: false, 
+    message: '', 
+    type: 'success' 
+  });
 
   // Reset state khi modal mở
   useEffect(() => {
@@ -70,8 +82,12 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
 
   const handleAddToCart = useCallback(async () => {
     if (!authService.isAuthenticated()) {
-      alert('Vui lòng đăng nhập để thêm vào giỏ hàng');
-      router.push('/login');
+      setAlertModal({
+        isOpen: true,
+        message: 'Vui lòng đăng nhập để thêm vào giỏ hàng',
+        type: 'warning'
+      });
+      setTimeout(() => router.push('/login'), 1500);
       return;
     }
 
@@ -80,13 +96,21 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
         product_id: product.id,
         quantity: quantity
       });
-      alert('Đã thêm vào giỏ hàng!');
+      setAlertModal({
+        isOpen: true,
+        message: 'Đã thêm vào giỏ hàng!',
+        type: 'success'
+      });
       // Dispatch event to update cart count in header
       window.dispatchEvent(new Event('cartUpdated'));
-      onClose();
+      setTimeout(() => onClose(), 1500);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
+      setAlertModal({
+        isOpen: true,
+        message: 'Có lỗi xảy ra khi thêm vào giỏ hàng',
+        type: 'error'
+      });
     }
   }, [product.id, quantity, router, onClose]);
 
@@ -273,6 +297,13 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
             </div>
           </div>
         </div>
+        
+        <AlertModal
+          isOpen={alertModal.isOpen}
+          onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+          message={alertModal.message}
+          type={alertModal.type}
+        />
     </Modal>
   );
 }
