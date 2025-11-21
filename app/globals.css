@@ -38,7 +38,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Smooth Animations */
+/* Smooth Animations - Optimized for performance */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -82,24 +82,64 @@ html {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.15s ease-out;
+  will-change: opacity;
 }
 
 .animate-slideUp {
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.2s ease-out;
+  will-change: transform, opacity;
 }
 
 .animate-slideDown {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.2s ease-out;
+  will-change: transform, opacity;
 }
 
 .animate-scaleIn {
-  animation: scaleIn 0.2s ease-out;
+  animation: scaleIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+/* Remove will-change after animation completes */
+.animate-fadeIn,
+.animate-slideUp,
+.animate-slideDown,
+.animate-scaleIn {
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn,
+  .animate-slideUp,
+  .animate-slideDown,
+  .animate-scaleIn {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Smooth transitions for all interactive elements */
 button, a, input, select, textarea {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.15s ease-in-out;
+}
+
+/* Performance optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* GPU acceleration for transforms */
+.transform, [class*="translate"], [class*="scale"], [class*="rotate"] {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize images */
+img {
+  content-visibility: auto;
 }
 
 /* Custom scrollbar */

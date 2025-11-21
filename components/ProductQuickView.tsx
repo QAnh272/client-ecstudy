@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CloseOutlined, MinusOutlined, PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { api } from '@/lib/api';
 import { authService } from '@/services/authService';
+import Modal from './Modal';
 
 interface Product {
   id: string;
@@ -32,24 +33,42 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
   const [selectedImage, setSelectedImage] = useState(0);
   const [imageError, setImageError] = useState(false);
 
-  if (!isOpen) return null;
+  // Reset state khi modal mở
+  useEffect(() => {
+    if (isOpen) {
+      setQuantity(1);
+      setSelectedImage(0);
+      setImageError(false);
+    }
+  }, [isOpen]);
 
-  const formatPrice = (price: number) => {
+  // Memoize images array
+  const images = useMemo(() => [
+    product.image_url,
+    product.image_url,
+    product.image_url,
+    product.image_url
+  ], [product.image_url]);
+
+  const formatPrice = useCallback((price: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'decimal',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price) + 'đ';
-  };
+  }, []);
 
-  const handleQuantityChange = (delta: number) => {
-    const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= product.stock) {
-      setQuantity(newQuantity);
-    }
-  };
+  const handleQuantityChange = useCallback((delta: number) => {
+    setQuantity((prev) => {
+      const newQuantity = prev + delta;
+      if (newQuantity >= 1 && newQuantity <= product.stock) {
+        return newQuantity;
+      }
+      return prev;
+    });
+  }, [product.stock]);
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = useCallback(async () => {
     if (!authService.isAuthenticated()) {
       alert('Vui lòng đăng nhập để thêm vào giỏ hàng');
       router.push('/login');
@@ -69,31 +88,20 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
       console.error('Error adding to cart:', error);
       alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
     }
-  };
-
-  // Mock images array
-  const images = [product.image_url, product.image_url, product.image_url, product.image_url];
+  }, [product.id, quantity, router, onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4 
-             bg-black/40 backdrop-blur-md backdrop-saturate-150"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-xl md:rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col relative"
-        onClick={(e) => e.stopPropagation()}
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="5xl">
+      {/* Close Button */}
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 md:top-4 md:right-4 w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors z-10 cursor-pointer"
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 md:top-4 md:right-4 w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors z-10 cursor-pointer"
-        >
-          <CloseOutlined className="text-black text-lg md:text-xl" />
-        </button>
+        <CloseOutlined className="text-black text-lg md:text-xl" />
+      </button>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-2rem)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 p-4 md:p-6">
+      <div className="overflow-y-auto max-h-[calc(90vh-2rem)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 p-4 md:p-6">
             {/* Left: Images */}
             <div>
               {/* Main Image */}
@@ -107,9 +115,11 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
                     src={images[selectedImage] || '/placeholder.png'}
                     alt={product.name}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
                     onError={() => setImageError(true)}
                     unoptimized={images[selectedImage]?.includes('localhost')}
+                    priority
                   />
                 )}
               </div>
@@ -120,15 +130,17 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
                   <div
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 ${selectedImage === idx ? 'border-blue-600' : 'border-transparent'
+                    className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 transition-colors ${selectedImage === idx ? 'border-blue-600' : 'border-transparent'
                       }`}
                   >
                     <Image
                       src={img || '/placeholder.png'}
                       alt={`${product.name} ${idx + 1}`}
                       fill
+                      sizes="100px"
                       className="object-cover"
                       unoptimized={img?.includes('localhost')}
+                      loading="lazy"
                     />
                   </div>
                 ))}
@@ -261,7 +273,6 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { api } from '@/lib/api';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
@@ -48,6 +48,18 @@ export default function ProductsManagement() {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  // Lock body scroll khi modal mở
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showModal]);
 
   const loadProducts = async () => {
     try {
@@ -97,7 +109,7 @@ export default function ProductsManagement() {
     setShowModal(true);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
@@ -107,25 +119,25 @@ export default function ProductsManagement() {
       };
       reader.readAsDataURL(file);
     }
-  };
+  }, []);
 
-  const handleAddUnit = () => {
+  const handleAddUnit = useCallback(() => {
     if (newUnit.trim() && !customUnits.includes(newUnit.trim())) {
       setCustomUnits([...customUnits, newUnit.trim()]);
       setFormData({ ...formData, unit: newUnit.trim() });
       setNewUnit('');
       setShowAddUnit(false);
     }
-  };
+  }, [newUnit, customUnits, formData]);
 
-  const handleUnitKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleUnitKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleAddUnit();
     }
-  };
+  }, [handleAddUnit]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       let uploadedImageUrl = formData.image_url;
@@ -168,9 +180,9 @@ export default function ProductsManagement() {
     } catch (error: any) {
       alert(error.message || 'Có lỗi xảy ra');
     }
-  };
+  }, [formData, imageFile, oldImageUrl, editingProduct]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
     try {
       await api.delete(`/api/products/${id}`);
@@ -178,11 +190,13 @@ export default function ProductsManagement() {
     } catch (error: any) {
       alert(error.message || 'Có lỗi xảy ra');
     }
-  };
+  }, []);
 
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProducts = useMemo(() => 
+    products.filter((p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase())
+    ), [products, searchQuery]
   );
 
   return (
@@ -310,25 +324,17 @@ export default function ProductsManagement() {
       {/* ========================== MODAL SỬA LẠI ĐẸP ========================== */}
       {showModal && (
         <div
-          className="
-            fixed inset-0 z-50 p-4
-            bg-black/40
-            backdrop-blur-md backdrop-saturate-150
-            flex items-center justify-center
-            animate-fadeIn
-          "
+          className="fixed inset-0 z-50 p-4 bg-black/50 flex items-center justify-center"
           onClick={() => setShowModal(false)}
+          style={{ willChange: 'opacity' }}
         >
           <div
-            className="
-              bg-white rounded-xl w-full max-w-2xl max-h-[90vh]
-              overflow-hidden flex flex-col shadow-2xl
-              transform animate-slideUp
-            "
+            className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl transform transition-transform duration-200"
             onClick={(e) => e.stopPropagation()}
+            style={{ willChange: 'transform' }}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 flex items-center justify-between rounded-t-xl">
+            <div className="bg-linear-to-r from-blue-600 to-blue-500 px-6 py-4 flex items-center justify-between rounded-t-xl">
               <h3 className="text-2xl font-bold text-white">
                 {editingProduct ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
               </h3>

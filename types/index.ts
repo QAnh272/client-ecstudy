@@ -1,5 +1,5 @@
 // API Response Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -19,4 +19,21 @@ export interface User {
 export interface AuthResponse {
   token: string;
   user: User;
+}
+
+// Product Types
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  image_url: string;
+  category: string;
+  product_code: string;
+  description?: string;
+  unit?: string;
+  average_rating?: number;
+  rating_count?: number;
+  created_at?: string;
+  updated_at?: string;
 }

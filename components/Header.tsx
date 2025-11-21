@@ -7,6 +7,7 @@ import { authService } from '@/services/authService';
 import { SearchOutlined, PhoneOutlined, UserOutlined, ShoppingCartOutlined, DownOutlined, LogoutOutlined, ProfileOutlined, DashboardOutlined, WalletOutlined} from '@ant-design/icons';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { Product } from '@/types';
 
 export default function Header() {
   const router = useRouter();
@@ -17,8 +18,11 @@ export default function Header() {
   const [cartCount, setCartCount] = useState<number>(0);
   const [mounted, setMounted] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
 
   const loadWalletBalance = async () => {
     try {
@@ -73,6 +77,12 @@ export default function Header() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -81,11 +91,49 @@ export default function Header() {
     };
   }, []);
 
+  // Fetch search suggestions
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      try {
+        const response = await api.get<{ success: boolean; data: Product[] }>(
+          `/api/products/search?q=${encodeURIComponent(searchQuery)}&limit=5`
+        );
+        if (response.success && response.data.length > 0) {
+          setSearchSuggestions(response.data);
+          setShowSuggestions(true);
+        } else {
+          setSearchSuggestions([]);
+          setShowSuggestions(false);
+        }
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchSuggestions, 300); // Debounce
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
+      setShowSuggestions(false);
+      router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
     }
+  };
+
+  const handleSuggestionClick = (productId: string) => {
+    setShowSuggestions(false);
+    setSearchQuery('');
+    router.push(`/products/${productId}`);
   };
 
   const handleLogout = async () => {
@@ -118,11 +166,12 @@ export default function Header() {
 
           {/* Search bar - Hidden on mobile */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-4xl mx-4 lg:mx-8">
-            <div className="relative w-full">
+            <div className="relative w-full" ref={searchRef}>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => searchQuery.trim().length >= 2 && searchSuggestions.length > 0 && setShowSuggestions(true)}
                 placeholder="Tìm kiếm sản phẩm..."
                 className="w-full px-5 py-3 pr-14 rounded-md bg-white text-gray-800 placeholder-gray-400 border border-gray-200 focus:outline-none focus:border-blue-500"
               />
@@ -132,6 +181,36 @@ export default function Header() {
               >
                 <SearchOutlined className="text-lg" />
               </button>
+
+              {/* Search Suggestions Dropdown */}
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                  {searchSuggestions.map((product) => (
+                    <div
+                      key={product.id}
+                      onClick={() => handleSuggestionClick(product.id)}
+                      className="flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0"
+                    >
+                      <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
+                        {product.image_url && (
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">{product.name}</p>
+                        <p className="text-sm text-blue-600 font-semibold">{formatPrice(product.price)}</p>
+                      </div>
+                      <SearchOutlined className="text-gray-400" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </form>
 
@@ -253,11 +332,12 @@ export default function Header() {
 
         {/* Mobile Search Bar */}
         <form onSubmit={handleSearch} className="md:hidden mt-3">
-          <div className="relative">
+          <div className="relative" ref={mobileSearchRef}>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => searchQuery.trim().length >= 2 && searchSuggestions.length > 0 && setShowSuggestions(true)}
               placeholder="Tìm kiếm sản phẩm..."
               className="w-full px-4 py-2 pr-12 rounded-md bg-white text-gray-800 placeholder-gray-400 text-sm"
             />
@@ -267,6 +347,35 @@ export default function Header() {
             >
               <SearchOutlined className="text-base" />
             </button>
+
+            {/* Mobile Search Suggestions Dropdown */}
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-72 overflow-y-auto">
+                {searchSuggestions.map((product) => (
+                  <div
+                    key={product.id}
+                    onClick={() => handleSuggestionClick(product.id)}
+                    className="flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0"
+                  >
+                    <div className="w-10 h-10 bg-gray-100 rounded shrink-0 overflow-hidden">
+                      {product.image_url && (
+                        <Image
+                          src={product.image_url}
+                          alt={product.name}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-800 truncate">{product.name}</p>
+                      <p className="text-xs text-blue-600 font-semibold">{formatPrice(product.price)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </form>
       </div>
