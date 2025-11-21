@@ -15,6 +15,7 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,10 +42,14 @@ export default function RegisterPage() {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-      });
+      }, rememberMe);
       
-      // After successful registration, redirect to login
-      router.push('/login?registered=true');
+      // After successful registration, redirect to home or login
+      if (rememberMe) {
+        router.push('/');
+      } else {
+        router.push('/login?registered=true');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng ký thất bại');
     } finally {
@@ -156,6 +161,19 @@ export default function RegisterPage() {
                 placeholder="••••••••"
               />
             </div>
+          </div>
+
+          {/* Remember Me */}
+          <div className="flex items-center">
+            <label className="flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" 
+              />
+              <span className="ml-2 text-sm text-black">Ghi nhớ đăng nhập (1 giờ)</span>
+            </label>
           </div>
 
           {/* Submit Button */}
