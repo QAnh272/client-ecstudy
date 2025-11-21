@@ -124,7 +124,11 @@ export default function LoginPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" 
               />
+<<<<<<< HEAD
               <span className="ml-2 text-sm text-black">Ghi nhớ đăng nhập </span>
+=======
+              <span className="ml-2 text-sm text-black">Ghi nhớ đăng nhập (1 giờ)</span>
+>>>>>>> 6c134bbf0a65aa1b6c4053b7747d2b194d9da531
             </label>
             <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
               Quên mật khẩu?
