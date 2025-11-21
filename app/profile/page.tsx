@@ -38,6 +38,8 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    address: '',
+    phone: '',
   });
   const [saveLoading, setSaveLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -54,6 +56,8 @@ export default function ProfilePage() {
     setFormData({
       username: currentUser.username,
       email: currentUser.email,
+      address: currentUser.address || '',
+      phone: currentUser.phone || '',
     });
     
     // Load orders from API
@@ -62,8 +66,8 @@ export default function ProfilePage() {
 
   const loadOrders = async () => {
     try {
-      const response = await api.get('/api/orders/my-orders');
-      const data: any = response.data;
+      const response: any = await api.get('/api/orders/my-orders');
+      const data = response.data;
       
       // Handle both wrapped and unwrapped responses
       let ordersData = [];
@@ -89,8 +93,8 @@ export default function ProfilePage() {
       setSaveLoading(true);
       setMessage(null);
 
-      // TODO: Call API to update user profile
-      // await api.put('/api/users/profile', formData);
+      // Call API to update user profile
+      await api.put(`/api/users/${user.id}`, formData);
       
       // Update localStorage
       const updatedUser = { ...user, ...formData };
@@ -250,6 +254,40 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Số điện thoại
+                  </label>
+                  {editMode ? (
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="Nhập số điện thoại"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    />
+                  ) : (
+                    <div className="text-gray-900">{user?.phone || 'Chưa cập nhật'}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Địa chỉ
+                  </label>
+                  {editMode ? (
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      placeholder="Nhập địa chỉ đầy đủ"
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    />
+                  ) : (
+                    <div className="text-gray-900">{user?.address || 'Chưa cập nhật'}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Vai trò
                   </label>
                   <div className="text-gray-900">
@@ -277,6 +315,8 @@ export default function ProfilePage() {
                         setFormData({
                           username: user.username,
                           email: user.email,
+                          address: user.address || '',
+                          phone: user.phone || '',
                         });
                         setMessage(null);
                       }}

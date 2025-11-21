@@ -219,11 +219,19 @@ export default function AdminDashboard() {
                     <td className="py-3 px-4">
                       <span className={`px-3 py-1 rounded-full text-sm ${
                         order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        order.status === 'paid' ? 'bg-green-100 text-green-800' :
                         order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
+                        order.status === 'shipped' ? 'bg-purple-100 text-purple-800' :
+                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                        order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
                       }`}>
-                        {order.status === 'pending' ? 'Chờ xử lý' :
-                         order.status === 'processing' ? 'Đang xử lý' : 'Đã giao'}
+                        {order.status === 'pending' ? 'Chờ thanh toán' :
+                         order.status === 'paid' ? 'Đã thanh toán' :
+                         order.status === 'processing' ? 'Đang xử lý' :
+                         order.status === 'shipped' ? 'Đang giao hàng' :
+                         order.status === 'delivered' ? 'Đã giao hàng' :
+                         order.status === 'cancelled' ? 'Đã hủy' : order.status}
                       </span>
                     </td>
                   </tr>

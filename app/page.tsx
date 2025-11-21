@@ -70,21 +70,24 @@ export default function HomePage() {
       
       <main className="container mx-auto px-4 py-8">
         {/* Categories Filter */}
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex gap-3 min-w-max md:flex-wrap md:min-w-0">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 md:px-6 py-2 rounded-full font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                selectedCategory === cat
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
-              }`}
-            >
-              {cat === 'all' ? 'Tất cả' : cat}
-            </button>
-          ))}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Danh mục sản phẩm</h2>
+          <div className="overflow-x-auto pb-2">
+            <div className="flex gap-3 min-w-max md:flex-wrap md:min-w-0">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap shadow-sm hover:shadow-md transform hover:scale-105 ${
+                    selectedCategory === cat
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105'
+                      : 'bg-white text-gray-700 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-300'
+                  }`}
+                >
+                  {cat === 'all' ? '🌟 Tất cả' : cat}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/Header';
+import AlertModal from '@/components/AlertModal';
 import { api } from '@/lib/api';
 import { MinusOutlined, PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 
@@ -28,6 +29,17 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
+  
+  // Modal state
+  const [alertModal, setAlertModal] = useState<{ 
+    isOpen: boolean; 
+    message: string; 
+    type: 'success' | 'error' | 'warning' 
+  }>({ 
+    isOpen: false, 
+    message: '', 
+    type: 'success' 
+  });
 
   useEffect(() => {
     if (params.id) {
@@ -72,12 +84,20 @@ export default function ProductDetailPage() {
         product_id: product.id,
         quantity: quantity
       });
-      alert('Đã thêm vào giỏ hàng!');
+      setAlertModal({
+        isOpen: true,
+        message: 'Đã thêm vào giỏ hàng!',
+        type: 'success'
+      });
       // Dispatch event to update cart count in header
       window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
+      setAlertModal({
+        isOpen: true,
+        message: 'Có lỗi xảy ra khi thêm vào giỏ hàng',
+        type: 'error'
+      });
     }
   };
 
@@ -94,7 +114,11 @@ export default function ProductDetailPage() {
       router.push('/cart');
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Có lỗi xảy ra khi thêm vào giỏ hàng');
+      setAlertModal({
+        isOpen: true,
+        message: 'Có lỗi xảy ra khi thêm vào giỏ hàng',
+        type: 'error'
+      });
     }
   };
 
@@ -297,6 +321,13 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
+      
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </div>
   );
 }

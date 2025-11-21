@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/Header';
+import AlertModal from '@/components/AlertModal';
 import { api } from '@/lib/api';
+import { authService } from '@/services/authService';
 import { ShoppingCartOutlined, WalletOutlined, HomeOutlined, PhoneOutlined } from '@ant-design/icons';
 
 interface CartItem {
@@ -32,14 +34,30 @@ export default function CheckoutPage() {
   // Form data
   const [shippingAddress, setShippingAddress] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  
+  // Modal state
+  const [alertModal, setAlertModal] = useState<{ 
+    isOpen: boolean; 
+    message: string; 
+    type: 'success' | 'error' | 'warning' 
+  }>({ 
+    isOpen: false, 
+    message: '', 
+    type: 'success' 
+  });
 
   useEffect(() => {
     loadCheckoutData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCheckoutData = async () => {
     try {
       setLoading(true);
+      
+      // Get current user info
+      const currentUser = authService.getStoredUser();
+      
       const [cartRes, walletRes] = await Promise.all([
         api.get<{ success: boolean; data: { items: CartItem[]; total: number } }>('/api/cart'),
         api.get<{ success: boolean; data: Wallet }>('/api/wallet')
@@ -54,6 +72,12 @@ export default function CheckoutPage() {
       
       if (walletRes.success) {
         setWallet(walletRes.data);
+      }
+      
+      // Pre-fill address and phone from user profile
+      if (currentUser) {
+        setShippingAddress(currentUser.address || '');
+        setPhoneNumber(currentUser.phone || '');
       }
     } catch (error) {
       console.error('Error loading checkout data:', error);
@@ -79,14 +103,22 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (!shippingAddress.trim() || !phoneNumber.trim()) {
-      alert('Vui lòng nhập đầy đủ thông tin giao hàng');
+      setAlertModal({
+        isOpen: true,
+        message: 'Vui lòng nhập đầy đủ thông tin giao hàng',
+        type: 'warning'
+      });
       return;
     }
 
     const total = calculateTotal();
     if (wallet && wallet.balance < total) {
-      alert('Số dư ví không đủ để thanh toán. Vui lòng nạp thêm tiền.');
-      router.push('/wallet');
+      setAlertModal({
+        isOpen: true,
+        message: 'Số dư ví không đủ để thanh toán. Vui lòng nạp thêm tiền.',
+        type: 'warning'
+      });
+      setTimeout(() => router.push('/wallet'), 1500);
       return;
     }
 
@@ -99,16 +131,28 @@ export default function CheckoutPage() {
       });
 
       if (response.success) {
-        alert('Đặt hàng thành công!');
-        router.push(`/orders/${response.data.id}`);
+        setAlertModal({
+          isOpen: true,
+          message: 'Đặt hàng thành công!',
+          type: 'success'
+        });
+        setTimeout(() => router.push(`/orders/${response.data.id}`), 1500);
       }
     } catch (error: unknown) {
       console.error('Error creating order:', error);
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { data?: { message?: string } } };
-        alert(err.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng');
+        setAlertModal({
+          isOpen: true,
+          message: err.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng',
+          type: 'error'
+        });
       } else {
-        alert('Có lỗi xảy ra khi đặt hàng');
+        setAlertModal({
+          isOpen: true,
+          message: 'Có lỗi xảy ra khi đặt hàng',
+          type: 'error'
+        });
       }
     } finally {
       setSubmitting(false);
@@ -150,12 +194,20 @@ export default function CheckoutPage() {
                   </label>
                   <textarea
                     value={shippingAddress}
-                    onChange={(e) => setShippingAddress(e.target.value)}
-                    placeholder="Nhập địa chỉ đầy đủ (số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố)"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-black"
+                    readOnly
+                    placeholder="Vui lòng cập nhật địa chỉ trong trang Profile"
+                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-600 bg-gray-50 cursor-not-allowed"
                     rows={3}
                     required
                   />
+                  {!shippingAddress && (
+                    <p className="text-sm text-red-600 mt-1">
+                      Bạn chưa có địa chỉ. Vui lòng{' '}
+                      <a href="/profile" className="underline hover:text-red-700">
+                        cập nhật trong Profile
+                      </a>
+                    </p>
+                  )}
                 </div>
 
                 <div className="mb-4">
@@ -167,12 +219,20 @@ export default function CheckoutPage() {
                     <input
                       type="tel"
                       value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="Nhập số điện thoại"
-                      className="w-full border border-gray-300 rounded-lg pl-12 pr-4 py-3 text-black"
+                      readOnly
+                      placeholder="Vui lòng cập nhật SĐT trong trang Profile"
+                      className="w-full border border-gray-200 rounded-lg pl-12 pr-4 py-3 text-gray-600 bg-gray-50 cursor-not-allowed"
                       required
                     />
                   </div>
+                  {!phoneNumber && (
+                    <p className="text-sm text-red-600 mt-1">
+                      Bạn chưa có SĐT. Vui lòng{' '}
+                      <a href="/profile" className="underline hover:text-red-700">
+                        cập nhật trong Profile
+                      </a>
+                    </p>
+                  )}
                 </div>
               </form>
             </div>
@@ -289,6 +349,13 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
+      
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </div>
   );
 }
