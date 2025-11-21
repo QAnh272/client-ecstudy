@@ -194,11 +194,14 @@ export default function OrderDetailPage() {
                   <div key={item.id} className="py-4 flex gap-4">
                     <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                       <Image
-                        src={item.image_url || '/placeholder.png'}
+                        src={`http://localhost:3000${item.image_url}` || '/placeholder.png'}
                         alt={item.name}
                         fill
                         className="object-cover"
-                        unoptimized={item.image_url?.includes('localhost')}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.png';
+                        }}
                       />
                     </div>
                     
