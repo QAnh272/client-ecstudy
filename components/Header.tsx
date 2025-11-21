@@ -102,7 +102,7 @@ export default function Header() {
 
       try {
         const response = await api.get<{ success: boolean; data: Product[] }>(
-          `/api/products/search?q=${encodeURIComponent(searchQuery)}&limit=5`
+          `/api/products/search?q=${encodeURIComponent(searchQuery)}&limit=10`
         );
         console.log('Search response:', response);
         if (response.success && response.data.length > 0) {
@@ -194,16 +194,20 @@ export default function Header() {
                       key={product.id}
                       type="button"
                       onMouseDown={() => handleSuggestionClick(product.id)}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0 text-left"
+                      className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors border-b text-left"
                     >
                       <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
                         {product.image_url && (
                           <Image
-                            src={product.image_url}
+                            src={`http://localhost:3000${product.image_url}`}
                             alt={product.name}
                             width={48}
                             height={48}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
                           />
                         )}
                       </div>
@@ -361,16 +365,20 @@ export default function Header() {
                     key={product.id}
                     type="button"
                     onMouseDown={() => handleSuggestionClick(product.id)}
-                    className="w-full flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors border-b last:border-b-0 text-left"
+                    className="w-full flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer transition-colors border-b text-left"
                   >
                     <div className="w-10 h-10 bg-gray-100 rounded shrink-0 overflow-hidden">
                       {product.image_url && (
                         <Image
-                          src={product.image_url}
+                          src={`http://localhost:3000${product.image_url}`}
                           alt={product.name}
                           width={40}
                           height={40}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
                         />
                       )}
                     </div>
@@ -380,6 +388,12 @@ export default function Header() {
                     </div>
                   </button>
                 ))}
+                <button
+                  type="submit"
+                  className="w-full p-2 text-center text-blue-600 hover:bg-blue-50 text-sm font-medium transition-colors border-t"
+                >
+                  Xem thêm kết quả
+                </button>
               </div>
             )}
           </div>

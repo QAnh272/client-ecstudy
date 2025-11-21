@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
         port: '3001',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/products/**',
+      },
     ],
     unoptimized: true, // Tắt tối ưu hóa để hỗ trợ tất cả định dạng ảnh
   },
