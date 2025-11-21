@@ -266,10 +266,10 @@ export default function ProductsManagement() {
                   {paginatedProducts.map((product) => (
                     <tr key={product.id} className="border-t hover:bg-blue-50 transition-colors duration-150">
                       <td className="py-3 px-4">
-                        {product.image_url ? (
+                        {product.image_url && product.image_url.trim() && (product.image_url.startsWith('http') || product.image_url.startsWith('/')) ? (
                           <div className="relative w-12 h-12 rounded border overflow-hidden">
                             <Image
-                              src={product.image_url.trim() ? (product.image_url.startsWith('http') ? product.image_url : `http://localhost:3000${product.image_url}`) : '/placeholder.png'}
+                              src={product.image_url.startsWith('http') ? product.image_url : `http://localhost:3000${product.image_url}`}
                               alt={product.name}
                               fill
                               className="object-cover"
