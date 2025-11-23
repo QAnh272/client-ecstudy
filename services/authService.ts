@@ -9,14 +9,12 @@ interface RegisterData {
 
 export const authService = {
   // Register
-  async register(data: RegisterData, rememberMe: boolean = false): Promise<AuthResponse> {
+  async register(data: RegisterData): Promise<AuthResponse> {
     const response = await api.post<ApiResponse<AuthResponse>>(endpoints.auth.register, data);
     
     if (!response.data) throw new Error(response.message || 'Đăng ký thất bại');
     
-    // Store token based on rememberMe option
-    this.storeAuth(response.data.token, response.data.user, rememberMe);
-    
+    // Don't auto-login after registration
     return response.data;
   },
 
@@ -40,7 +38,7 @@ export const authService = {
     if (typeof window === 'undefined') return;
     
     const storage = rememberMe ? localStorage : sessionStorage;
-    const expiryTime = rememberMe ? Date.now() + (60 * 60 * 1000) : null; // 1 hour if remember
+    const expiryTime = rememberMe ? Date.now() + (7 * 24 * 60 * 60 * 1000) : null; // 7 days if remember
     
     storage.setItem('token', token);
     storage.setItem('user', JSON.stringify(user));

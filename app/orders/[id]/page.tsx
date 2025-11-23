@@ -46,9 +46,14 @@ export default function OrderDetailPage() {
       const response = await api.get<{ success: boolean; data: Order }>(`/api/orders/${id}`);
       if (response.success) {
         setOrder(response.data);
+      } else {
+        console.error('Failed to load order');
+        alert('Không tìm thấy đơn hàng');
+        router.push('/');
       }
     } catch (error) {
       console.error('Error loading order:', error);
+      alert('Không thể tải thông tin đơn hàng');
       router.push('/');
     } finally {
       setLoading(false);

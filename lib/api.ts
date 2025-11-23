@@ -38,6 +38,24 @@ axiosInstance.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    // Handle 401 errors - redirect to login
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      // Don't redirect if already on login/register pages
+      if (currentPath !== '/login' && currentPath !== '/register') {
+        // Clear auth data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('tokenExpiry');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        // Only redirect if not already redirecting
+        if (!window.location.href.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+    }
+    
     const message = error.response?.data?.message || error.message || 'Đã có lỗi xảy ra';
     console.error('API Error:', message);
     return Promise.reject(new Error(message));
