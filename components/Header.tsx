@@ -196,25 +196,24 @@ export default function Header() {
                       onMouseDown={() => handleSuggestionClick(product.id)}
                       className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors border-b text-left"
                     >
-                      <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
-                        {product.image_url && (
-                          <Image
-                            src={
-                              product.image_url && product.image_url.trim()
-                                ? product.image_url.startsWith('http')
-                                  ? product.image_url
-                                  : `${process.env.NEXT_PUBLIC_API_URL || ''}${product.image_url}`
-                                : '/placeholder.png'
-                            }
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = '/placeholder.png';
-                            }}
-                          />
-                        )}
+                      <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden flex items-center justify-center">
+                        <Image
+                          src={
+                            product.image_url && product.image_url.trim()
+                              ? product.image_url.startsWith('http')
+                                ? product.image_url
+                                : `${process.env.NEXT_PUBLIC_API_URL || ''}${product.image_url}`
+                              : '/placeholder.png'
+                          }
+                          alt={product.name}
+                          width={48}
+                          height={48}
+                          className="object-cover rounded"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.png';
+                          }}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 truncate">{product.name}</p>
