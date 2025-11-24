@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { authService } from '@/services/authService';
-import { SearchOutlined, PhoneOutlined, UserOutlined, ShoppingCartOutlined, DownOutlined, LogoutOutlined, ProfileOutlined, DashboardOutlined, WalletOutlined} from '@ant-design/icons';
+import { SearchOutlined, PhoneOutlined, UserOutlined, ShoppingCartOutlined, DownOutlined, LogoutOutlined, ProfileOutlined, DashboardOutlined, WalletOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Product } from '@/types';
@@ -52,7 +52,7 @@ export default function Header() {
       const authenticated = authService.isAuthenticated();
       setIsAuth(authenticated);
       setUser(authService.getStoredUser());
-      
+
       if (authenticated) {
         loadWalletBalance();
         loadCartCount();
@@ -199,14 +199,19 @@ export default function Header() {
                       <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
                         {product.image_url && (
                           <Image
-                            src={product.image_url.trim() ? (product.image_url.startsWith('http') ? product.image_url : `http://localhost:3000${product.image_url}`) : '/placeholder.png'}
+                            src={
+                              product.image_url && product.image_url.trim()
+                                ? product.image_url.startsWith('http')
+                                  ? product.image_url
+                                  : `${process.env.NEXT_PUBLIC_API_URL || ''}${product.image_url}`
+                                : '/placeholder.png'
+                            }
                             alt={product.name}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
+                              target.src = '/placeholder.png';
                             }}
                           />
                         )}
@@ -231,11 +236,11 @@ export default function Header() {
                 <PhoneOutlined className="text-xl" />
               </div>
               <div className="text-left">
-                <div className="text-base font-semibold leading-tight">1900 866 819</div>
+                <div className="text-base font-semibold leading-tight">0962215768</div>
                 <div className="text-xs leading-tight">Hỗ trợ khách hàng</div>
               </div>
             </div>
-            
+
             {/* Auth - Only render after mount to avoid hydration mismatch */}
             {mounted ? (
               isAuth && user ? (
@@ -328,7 +333,7 @@ export default function Header() {
                 </div>
               </div>
             )}
-            
+
             {/* Cart */}
             <Link href="/cart" className="relative hover:text-blue-200 transition-colors">
               <div className="text-2xl md:text-3xl"><ShoppingCartOutlined /></div>

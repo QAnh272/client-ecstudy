@@ -26,22 +26,22 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectAll, setSelectAll] = useState(true);
-  
+
   // Modal states
-  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; message: string; type: 'success' | 'error' | 'warning' }>({ 
-    isOpen: false, 
-    message: '', 
-    type: 'success' 
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; message: string; type: 'success' | 'error' | 'warning' }>({
+    isOpen: false,
+    message: '',
+    type: 'success'
   });
-  const [confirmModal, setConfirmModal] = useState<{ 
-    isOpen: boolean; 
-    message: string; 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    message: string;
     onConfirm: () => void;
     type: 'danger' | 'warning';
-  }>({ 
-    isOpen: false, 
-    message: '', 
-    onConfirm: () => {},
+  }>({
+    isOpen: false,
+    message: '',
+    onConfirm: () => { },
     type: 'warning'
   });
 
@@ -71,7 +71,7 @@ export default function CartPage() {
   };
 
   const toggleSelectItem = (productId: string) => {
-    const newItems = cartItems.map(item => 
+    const newItems = cartItems.map(item =>
       item.product_id === productId ? { ...item, selected: !item.selected } : item
     );
     setCartItems(newItems);
@@ -88,7 +88,7 @@ export default function CartPage() {
             : item
         )
       );
-      
+
       // Gọi API trong background
       await api.put(`/api/cart/items/${productId}`, { quantity: newQuantity });
     } catch (error) {
@@ -102,7 +102,7 @@ export default function CartPage() {
     try {
       // Cập nhật UI ngay
       setCartItems(prevItems => prevItems.filter(item => item.product_id !== productId));
-      
+
       // Gọi API trong background
       await api.delete(`/api/cart/items/${productId}`);
     } catch (error) {
@@ -121,23 +121,23 @@ export default function CartPage() {
       });
       return;
     }
-    
+
     setConfirmModal({
       isOpen: true,
       message: `Bạn có chắc muốn xóa ${selectedItems.length} sản phẩm đã chọn?`,
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal({ ...confirmModal, isOpen: false });
-        
+
         try {
           // Xóa UI ngay
           setCartItems(prevItems => prevItems.filter(item => !item.selected));
-          
+
           // Xóa từng item qua API
           await Promise.all(
             selectedItems.map(item => api.delete(`/api/cart/items/${item.product_id}`))
           );
-          
+
           setAlertModal({
             isOpen: true,
             message: 'Đã xóa sản phẩm thành công!',
@@ -163,14 +163,14 @@ export default function CartPage() {
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal({ ...confirmModal, isOpen: false });
-        
+
         try {
           // Xóa UI ngay
           setCartItems([]);
-          
+
           // Xóa qua API
           await api.delete('/api/cart');
-          
+
           setAlertModal({
             isOpen: true,
             message: 'Đã xóa toàn bộ giỏ hàng!',
@@ -221,7 +221,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-6">
         <h1 className="text-2xl md:text-3xl text-black font-bold mb-6">Giỏ hàng</h1>
 
@@ -425,7 +425,7 @@ export default function CartPage() {
                     <span className="text-gray-700">Tạm tính ({getSelectedCount()} sản phẩm):</span>
                     <span className="text-xl font-bold text-gray-900">₫{formatPrice(calculateTotal())}</span>
                   </div>
-                  
+
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between text-gray-600">
                       <span>Phí vận chuyển:</span>
@@ -450,7 +450,7 @@ export default function CartPage() {
                   >
                     Mua Hàng ({getSelectedCount()})
                   </button>
-                  
+
                   <button
                     onClick={() => router.push('/')}
                     className="w-full mt-3 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer"
