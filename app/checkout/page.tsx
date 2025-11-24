@@ -30,34 +30,34 @@ export default function CheckoutPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  
+
   // Form data
   const [shippingAddress, setShippingAddress] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  
+
   // Modal state
-  const [alertModal, setAlertModal] = useState<{ 
-    isOpen: boolean; 
-    message: string; 
-    type: 'success' | 'error' | 'warning' 
-  }>({ 
-    isOpen: false, 
-    message: '', 
-    type: 'success' 
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning'
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'success'
   });
 
   useEffect(() => {
     loadCheckoutData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCheckoutData = async () => {
     try {
       setLoading(true);
-      
+
       // Get current user info
       const currentUser = authService.getStoredUser();
-      
+
       const [cartRes, walletRes] = await Promise.all([
         api.get<{ success: boolean; data: { items: CartItem[]; total: number } }>('/api/cart'),
         api.get<{ success: boolean; data: Wallet }>('/api/wallet')
@@ -69,11 +69,11 @@ export default function CheckoutPage() {
           router.push('/cart');
         }
       }
-      
+
       if (walletRes.success) {
         setWallet(walletRes.data);
       }
-      
+
       // Pre-fill address and phone from user profile
       if (currentUser) {
         setShippingAddress(currentUser.address || '');
@@ -175,7 +175,7 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-black mb-8">Thanh toán đơn hàng</h1>
 
@@ -186,7 +186,7 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
                 <HomeOutlined /> Thông tin giao hàng
               </h2>
-              
+
               <form onSubmit={handleSubmitOrder}>
                 <div className="mb-4">
                   <label className="block text-black font-medium mb-2">
@@ -242,13 +242,19 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
                 <ShoppingCartOutlined /> Sản phẩm đặt mua ({cartItems.length})
               </h2>
-              
+
               <div className="divide-y">
                 {cartItems.map((item) => (
                   <div key={item.id} className="py-4 flex gap-4">
                     <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                       <Image
-                        src={item.image_url && item.image_url.trim() ? (item.image_url.startsWith('http') ? item.image_url : `http://localhost:3000${item.image_url}`) : '/placeholder.png'}
+                        src={
+                          item.image_url && item.image_url.trim()
+                            ? item.image_url.startsWith('http')
+                              ? item.image_url
+                              : `${process.env.NEXT_PUBLIC_API_URL || ''}${item.image_url}`
+                            : '/placeholder.png'
+                        }
                         alt={item.name}
                         fill
                         className="object-cover"
@@ -258,13 +264,13 @@ export default function CheckoutPage() {
                         }}
                       />
                     </div>
-                    
+
                     <div className="flex-1">
                       <h3 className="font-medium text-black mb-1">{item.name}</h3>
                       <p className="text-sm text-gray-500 mb-1">Số lượng: {item.quantity}</p>
                       <p className="text-blue-600 font-bold">{formatPrice(item.price)}</p>
                     </div>
-                    
+
                     <div className="text-right">
                       <p className="font-bold text-black">{formatPrice(item.price * item.quantity)}</p>
                     </div>
@@ -278,7 +284,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-4 md:p-6 sticky top-4">
               <h2 className="text-xl font-bold text-black mb-4">Tóm tắt đơn hàng</h2>
-              
+
               <div className="space-y-3 mb-4 pb-4 border-b">
                 <div className="flex justify-between text-black">
                   <span>Tạm tính:</span>
@@ -352,7 +358,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
-      
+
       <AlertModal
         isOpen={alertModal.isOpen}
         onClose={() => setAlertModal({ ...alertModal, isOpen: false })}

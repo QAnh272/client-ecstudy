@@ -130,7 +130,7 @@ export default function OrderDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         {/* Success Message */}
         <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 flex items-center gap-4">
@@ -149,7 +149,7 @@ export default function OrderDetailPage() {
             {/* Order Details */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-bold text-black mb-4">Thông tin đơn hàng</h2>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Mã đơn hàng:</span>
@@ -177,7 +177,7 @@ export default function OrderDetailPage() {
             {/* Shipping Info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-bold text-black mb-4">Thông tin giao hàng</h2>
-              
+
               <div className="space-y-3">
                 <div>
                   <p className="text-gray-600 mb-1">Địa chỉ:</p>
@@ -193,13 +193,19 @@ export default function OrderDetailPage() {
             {/* Order Items */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-bold text-black mb-4">Sản phẩm đã mua</h2>
-              
+
               <div className="divide-y">
                 {order.items.map((item) => (
                   <div key={item.id} className="py-4 flex gap-4">
                     <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                       <Image
-                        src={item.image_url && item.image_url.trim() ? (item.image_url.startsWith('http') ? item.image_url : `http://localhost:3000${item.image_url}`) : '/placeholder.png'}
+                        src={
+                          item.image_url && item.image_url.trim()
+                            ? item.image_url.startsWith('http')
+                              ? item.image_url
+                              : `${process.env.NEXT_PUBLIC_API_URL || ''}${item.image_url}`
+                            : '/placeholder.png'
+                        }
                         alt={item.name}
                         fill
                         className="object-cover"
@@ -209,13 +215,13 @@ export default function OrderDetailPage() {
                         }}
                       />
                     </div>
-                    
+
                     <div className="flex-1">
                       <h3 className="font-medium text-black mb-1">{item.name}</h3>
                       <p className="text-sm text-gray-500">Số lượng: {item.quantity}</p>
                       <p className="text-blue-600 font-bold mt-1">{formatPrice(item.price)}</p>
                     </div>
-                    
+
                     <div className="text-right">
                       <p className="font-bold text-black">{formatPrice(item.subtotal)}</p>
                     </div>
@@ -229,7 +235,7 @@ export default function OrderDetailPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
               <h2 className="text-xl font-bold text-black mb-4">Tổng đơn hàng</h2>
-              
+
               <div className="space-y-3 mb-4 pb-4 border-b">
                 <div className="flex justify-between text-black">
                   <span>Tạm tính:</span>
@@ -252,7 +258,7 @@ export default function OrderDetailPage() {
               >
                 Tiếp tục mua sắm
               </button>
-              
+
               {order.status === 'delivered' && (
                 <button
                   onClick={() => router.push(`/orders/${order.id}/review`)}
@@ -261,7 +267,7 @@ export default function OrderDetailPage() {
                   Đánh giá đơn hàng
                 </button>
               )}
-              
+
               <button
                 onClick={() => router.push('/profile')}
                 className="w-full border border-gray-300 text-black py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer"
