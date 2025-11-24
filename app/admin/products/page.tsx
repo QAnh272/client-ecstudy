@@ -195,7 +195,7 @@ export default function ProductsManagement() {
     }
   }, []);
 
-  const filteredProducts = useMemo(() => 
+  const filteredProducts = useMemo(() =>
     products.filter((p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -269,14 +269,19 @@ export default function ProductsManagement() {
                         {product.image_url && product.image_url.trim() && (product.image_url.startsWith('http') || product.image_url.startsWith('/')) ? (
                           <div className="relative w-12 h-12 rounded border overflow-hidden">
                             <Image
-                              src={product.image_url.startsWith('http') ? product.image_url : `http://localhost:3000${product.image_url}`}
+                              src={
+                                product.image_url && product.image_url.trim()
+                                  ? product.image_url.startsWith('http')
+                                    ? product.image_url
+                                    : `${process.env.NEXT_PUBLIC_API_URL || ''}${product.image_url}`
+                                  : '/placeholder.png'
+                              }
                               alt={product.name}
                               fill
                               className="object-cover"
-                              unoptimized
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
+                                target.src = '/placeholder.png';
                               }}
                             />
                           </div>
@@ -341,42 +346,41 @@ export default function ProductsManagement() {
             </div>
           )}
 
-            {/* Phân trang */}
-            {totalPages > 1 && (
-              <div className="mt-6 flex justify-center items-center gap-3">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                >
-                  Trước
-                </button>
-                
-                <div className="flex gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`min-w-[40px] px-4 py-2 rounded-lg cursor-pointer transition-colors ${
-                        currentPage === page
-                          ? 'bg-blue-600 text-white font-semibold shadow-md'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
+          {/* Phân trang */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex justify-center items-center gap-3">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              >
+                Trước
+              </button>
 
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                >
-                  Sau
-                </button>
+              <div className="flex gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`min-w-[40px] px-4 py-2 rounded-lg cursor-pointer transition-colors ${currentPage === page
+                      ? 'bg-blue-600 text-white font-semibold shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      }`}
+                  >
+                    {page}
+                  </button>
+                ))}
               </div>
-            )}
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transition-colors"
+              >
+                Sau
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
